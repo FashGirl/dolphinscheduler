@@ -334,8 +334,9 @@ export default {
     description_tips: 'Please enter description',
     task_priority: 'Task priority',
     worker_group: 'Worker group',
-    worker_group_tips:
-      'The Worker group no longer exists, please select the correct Worker group!',
+    worker_group_tips: 'The Worker group no longer exists, please select the correct Worker group!',
+    worker_group_use_default_tips: 'Do not select the `default` Worker group!',
+    worker_group_empty_tips: 'The worker group cannot be empty!',
     environment_name: 'Environment Name',
     task_group_name: 'Task group name',
     task_group_queue_priority: 'Priority',

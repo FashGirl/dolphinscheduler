@@ -38,7 +38,7 @@ export default defineComponent({
       <div
         ref={container}
         class={[Styles.canvas, 'dag-container']}
-        onDrop={(e) => {
+        onDrop={(e: DragEvent) => {
           context.emit('drop', e)
         }}
         onDragenter={preventDefault}

@@ -42,7 +42,7 @@ export function useShell({
     environmentCode: null,
     failRetryInterval: 1,
     failRetryTimes: 0,
-    workerGroup: 'default',
+    workerGroup: undefined,
     cpuQuota: -1,
     memoryMax: -1,
     delayTime: 0,

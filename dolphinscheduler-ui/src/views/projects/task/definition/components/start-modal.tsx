@@ -173,7 +173,7 @@ export default defineComponent({
           </NFormItem>
           <NFormItem label={t('project.task.worker_group')} path='workerGroup'>
             <NSelect
-              options={this.workerGroups}
+              options={this.workerGroups.filter(item => String(item.value) !== 'default')}
               onUpdateValue={this.updateWorkerGroup}
               v-model:value={this.startForm.workerGroup}
             />
@@ -221,7 +221,7 @@ export default defineComponent({
                       separator=':'
                       placeholder={['prop', 'value']}
                       defaultValue={[item.prop, item.value]}
-                      onUpdateValue={(param) =>
+                      onUpdateValue={(param: Array<string>) =>
                         this.updateParamsList(index, param)
                       }
                     />

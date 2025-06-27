@@ -336,6 +336,8 @@ export default {
     task_priority: '任务优先级',
     worker_group: 'Worker分组',
     worker_group_tips: '该Worker分组已经不存在，请选择正确的Worker分组！',
+    worker_group_use_default_tips: '请选择非 `default` Worker分组',
+    worker_group_empty_tips: 'Worker分组不能为空！',
     environment_name: '环境名称',
     task_group_name: '任务组名称',
     task_group_queue_priority: '组内优先级',

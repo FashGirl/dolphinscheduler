@@ -40,7 +40,7 @@ export function useDvc({
     environmentCode: null,
     failRetryInterval: 1,
     failRetryTimes: 0,
-    workerGroup: 'default',
+    workerGroup: undefined,
     delayTime: 0,
     timeout: 30,
     timeoutNotifyStrategy: ['WARN'],

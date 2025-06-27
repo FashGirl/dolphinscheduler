@@ -37,7 +37,7 @@ export default defineComponent({
           <div
             class={[styles.draggable, `task-item-${task.type}`]}
             draggable='true'
-            onDragstart={(e) => {
+            onDragstart={(e: DragEvent) => {
               context.emit('dragStart', e, task.type as TaskType)
             }}
           >

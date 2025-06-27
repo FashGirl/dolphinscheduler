@@ -62,7 +62,7 @@ export const useForm = () => {
       complementDependentMode: 'OFF_MODE',
       runMode: 'RUN_MODE_SERIAL',
       processInstancePriority: 'MEDIUM',
-      workerGroup: 'default',
+      workerGroup: null,
       environmentCode: null,
       startParams: null,
       expectedParallelismNumber: '',

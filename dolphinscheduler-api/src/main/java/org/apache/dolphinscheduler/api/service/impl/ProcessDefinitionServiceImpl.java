@@ -2386,7 +2386,7 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
         scheduleObj.setReleaseState(ReleaseState.OFFLINE);
         scheduleObj.setProcessInstancePriority(scheduleObj.getProcessInstancePriority() == null ? Priority.MEDIUM
                 : scheduleObj.getProcessInstancePriority());
-        scheduleObj.setWorkerGroup(scheduleObj.getWorkerGroup() == null ? "default" : scheduleObj.getWorkerGroup());
+        scheduleObj.setWorkerGroup(scheduleObj.getWorkerGroup() == null ? "" : scheduleObj.getWorkerGroup());
         scheduleObj
                 .setEnvironmentCode(scheduleObj.getEnvironmentCode() == null ? -1 : scheduleObj.getEnvironmentCode());
         scheduleMapper.insert(scheduleObj);
@@ -2507,7 +2507,7 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
         Priority processInstancePriority =
                 schedule.getProcessInstancePriority() == null ? Priority.MEDIUM : schedule.getProcessInstancePriority();
         int warningGroupId = schedule.getWarningGroupId() == 0 ? 1 : schedule.getWarningGroupId();
-        String workerGroup = schedule.getWorkerGroup() == null ? "default" : schedule.getWorkerGroup();
+        String workerGroup = schedule.getWorkerGroup() == null ? "" : schedule.getWorkerGroup();
         long environmentCode = schedule.getEnvironmentCode() == null ? -1 : schedule.getEnvironmentCode();
 
         ScheduleParam param = new ScheduleParam();

@@ -30,7 +30,8 @@ export function useWorkerGroup(): IJsonItem {
     if (loading.value) return
     loading.value = true
     const res = await queryAllWorkerGroups()
-    options.value = res.map((item: string) => ({ label: item, value: item }))
+    const workerGroupList = res.filter((item: string) => item !== 'default')
+    options.value = workerGroupList.map((item: string) => ({ label: item, value: item }))
     loading.value = false
   }
 
@@ -49,8 +50,16 @@ export function useWorkerGroup(): IJsonItem {
     validate: {
       trigger: ['input', 'blur'],
       required: true,
-      message: t('project.node.worker_group_tips')
+      validator(_: any, value: string) {
+        if (!value) {
+          return new Error(t('project.node.worker_group_empty_tips'))
+        }
+        if (value === 'default') {
+          return new Error(t('project.node.worker_group_use_default_tips'))
+        }
+      },
+      // message: t('project.node.worker_group_tips')
     },
-    value: 'default'
+    // value: 'default'
   }
 }

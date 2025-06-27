@@ -39,7 +39,7 @@ export const useStart = (
       version: 1,
       warningType: 'NONE',
       warningGroupId: null,
-      workerGroup: 'default',
+      workerGroup: null,
       environmentCode: null,
       startParams: null as null | string,
       dryRun: 0

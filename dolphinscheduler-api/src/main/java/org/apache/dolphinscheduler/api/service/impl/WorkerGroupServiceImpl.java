@@ -202,11 +202,11 @@ public class WorkerGroupServiceImpl extends BaseServiceImpl implements WorkerGro
         Result result = new Result();
         List<WorkerGroup> workerGroups;
         if (loginUser.getUserType().equals(UserType.ADMIN_USER)) {
-            workerGroups = getWorkerGroups(null);
+            workerGroups = getWorkerGroups(null, loginUser);
         } else {
             Set<Integer> ids = resourcePermissionCheckService
                     .userOwnedResourceIdsAcquisition(AuthorizationType.WORKER_GROUP, loginUser.getId(), logger);
-            workerGroups = getWorkerGroups(ids.isEmpty() ? Collections.emptyList() : new ArrayList<>(ids));
+            workerGroups = getWorkerGroups(ids.isEmpty() ? Collections.emptyList() : new ArrayList<>(ids), loginUser);
         }
         List<WorkerGroup> resultDataList = new ArrayList<>();
         int total = 0;
@@ -252,14 +252,15 @@ public class WorkerGroupServiceImpl extends BaseServiceImpl implements WorkerGro
         Map<String, Object> result = new HashMap<>();
         List<WorkerGroup> workerGroups;
         if (loginUser.getUserType().equals(UserType.ADMIN_USER)) {
-            workerGroups = getWorkerGroups(null);
+            workerGroups = getWorkerGroups(null, loginUser);
         } else {
             Set<Integer> ids = resourcePermissionCheckService
                     .userOwnedResourceIdsAcquisition(AuthorizationType.WORKER_GROUP, loginUser.getId(), logger);
-            workerGroups = getWorkerGroups(ids.isEmpty() ? Collections.emptyList() : new ArrayList<>(ids));
+            workerGroups = getWorkerGroups(ids.isEmpty() ? Collections.emptyList() : new ArrayList<>(ids), loginUser);
         }
         List<String> availableWorkerGroupList = workerGroups.stream()
                 .map(WorkerGroup::getName)
+                .filter(name -> !"default".equals(name))
                 .collect(Collectors.toList());
         result.put(Constants.DATA_LIST, availableWorkerGroupList);
         putMsg(result, Status.SUCCESS);
@@ -271,11 +272,13 @@ public class WorkerGroupServiceImpl extends BaseServiceImpl implements WorkerGro
      *
      * @return WorkerGroup list
      */
-    private List<WorkerGroup> getWorkerGroups(List<Integer> ids) {
+    private List<WorkerGroup> getWorkerGroups(List<Integer> ids, User loginUser) {
         // worker groups from database
         List<WorkerGroup> workerGroups;
         if (ids != null) {
-            workerGroups = ids.isEmpty() ? new ArrayList<>() : workerGroupMapper.selectBatchIds(ids);
+            // workerGroups = ids.isEmpty() ? new ArrayList<>() : workerGroupMapper.selectBatchIds(ids);
+            workerGroups = ids.isEmpty() ? new ArrayList<>()
+                    : workerGroupMapper.queryWorkerGroupByFilter(loginUser.getQueue());
         } else {
             workerGroups = workerGroupMapper.queryAllWorkerGroup();
         }

@@ -48,7 +48,7 @@ export function useDataQuality({
     environmentCode: null,
     failRetryInterval: 1,
     failRetryTimes: 0,
-    workerGroup: 'default',
+    workerGroup: undefined,
     delayTime: 0,
     ruleId: 1,
     deployMode: 'cluster',

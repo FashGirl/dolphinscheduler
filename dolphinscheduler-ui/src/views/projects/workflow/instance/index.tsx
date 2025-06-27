@@ -100,7 +100,7 @@ export default defineComponent({
           <NSpace vertical>
             <NDataTable
               loading={loadingRef}
-              rowKey={(row) => row.id}
+              rowKey={(row: Record<string, any>) => row.id}
               columns={this.columns}
               data={this.tableData}
               striped

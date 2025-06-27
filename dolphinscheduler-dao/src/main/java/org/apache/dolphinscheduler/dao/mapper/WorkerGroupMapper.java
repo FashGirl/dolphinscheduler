@@ -62,4 +62,12 @@ public interface WorkerGroupMapper extends BaseMapper<WorkerGroup> {
      */
     List<WorkerGroup> queryWorkerGroupByName(@Param("name") String name);
 
+    /**
+     * query worker group list filter by queue
+     *
+     * @param queue queue
+     * @return worker group list
+     */
+    List<WorkerGroup> queryWorkerGroupByFilter(@Param("queue") String queue);
+
 }

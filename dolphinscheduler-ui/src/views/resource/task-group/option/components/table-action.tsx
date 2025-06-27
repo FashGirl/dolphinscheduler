@@ -90,7 +90,7 @@ const TableAction = defineComponent({
                 v-model={[this.row.status, 'value']}
                 checkedValue={1}
                 uncheckedValue={0}
-                onUpdate:value={(value) =>
+                onUpdate:value={(value: number) =>
                   handleSwitchStatus(value, this.row.id)
                 }
               />
