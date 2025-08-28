@@ -41,6 +41,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -255,7 +256,74 @@ public final class DingTalkSender {
      * @param text text
      */
     private void generateMarkdownMsg(String title, String content, Map<String, Object> text) {
-        StringBuilder builder = new StringBuilder(content);
+        // StringBuilder builder = new StringBuilder(content);
+
+        StringBuilder builder = new StringBuilder();
+
+        try {
+            List<Map> dataList = JSONUtils.toList(content, Map.class);
+            for (Map<String, Object> data : dataList) {
+                String taskState = (String) data.getOrDefault("taskState", "");
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(taskState)) {
+                    taskState = convertStateString(taskState);
+                    data.put("taskState", taskState);
+                }
+                String processState = (String) data.getOrDefault("processState", "");
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(processState)) {
+                    processState = convertStateString(processState);
+                    data.put("processState", processState);
+                }
+
+                for (Map.Entry<String, Object> entry : data.entrySet()) {
+                    builder.append("- **").append(entry.getKey()).append("**：").append(entry.getValue()).append("\n");
+                }
+                builder.append("\n---\n\n"); // 分隔线，支持多条任务
+                // if ("SERVER_DOWN".equals(data.get("event"))){
+                // builder.append("- **服务名称**：").append(data.getOrDefault("serverName", "")).append("\n");
+                // } else if (data.get("projectName") != null && data.get("taskName") != null && data.get("projectCode")
+                // != null) {
+                // String taskState = (String) data.getOrDefault("taskState", "");
+                // switch (taskState) {
+                // case "SUCCESS":
+                // taskState = "✅ SUCCESS";
+                // break;
+                // case "FAILURE":
+                // taskState = "❌ FAILURE";
+                // break;
+                // case "KILL":
+                // taskState = "⛔ KILL";
+                // break;
+                // }
+                //
+                // builder.append("- **项目名称**：").append(data.getOrDefault("projectName", "")).append("\n");
+                // builder.append("- **任务名称**：").append(data.getOrDefault("taskName", "")).append("\n");
+                // builder.append("- **任务类型**：").append(data.getOrDefault("taskType", "")).append("\n");
+                // builder.append("- **任务状态**：").append(taskState).append("\n");
+                // builder.append("- **工作流名称**：").append(data.getOrDefault("processName", "")).append("\n");
+                // builder.append("- **工作流PID**：").append(data.getOrDefault("processId", "")).append("\n");
+                // builder.append("- **执行时间**：")
+                // .append(data.getOrDefault("taskStartTime", "")).append(" ~ ")
+                // .append(data.getOrDefault("taskEndTime", "")).append("\n");
+                // builder.append("- **执行机器**：").append(data.getOrDefault("taskHost", "")).append("\n");
+                // builder.append("- **日志文件**：").append(data.getOrDefault("logPath", "")).append("\n");
+                //
+                // builder.append("\n---\n\n"); // 分隔线，支持多条任务
+                // } else {
+                // builder.append(content);
+                // break;
+                // }
+            }
+
+        } catch (Exception e) {
+            // fallback: 内容不是 JSON，原样输出
+            builder.append(content);
+        }
+
+        if (builder.length() == 0) {
+            builder.append(content);
+        }
+        builder.insert(0, "### 🐬 DolphinScheduler 任务告警\n\n");
+
         if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
             builder.append(" ");
             builder.append(keyword);
@@ -280,6 +348,21 @@ public final class DingTalkSender {
         String txt = StringUtils.newStringUtf8(byt);
         text.put("title", title);
         text.put("text", txt);
+    }
+
+    private String convertStateString(String processState) {
+        switch (processState) {
+            case "SUCCESS":
+                processState = "✅ SUCCESS";
+                break;
+            case "FAILURE":
+                processState = "❌ FAILURE";
+                break;
+            case "KILL":
+                processState = "⛔ KILL";
+                break;
+        }
+        return processState;
     }
 
     /**
@@ -318,7 +401,7 @@ public final class DingTalkSender {
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(secret.getBytes("UTF-8"), "HmacSHA256"));
             byte[] signData = mac.doFinal(stringToSign.getBytes("UTF-8"));
-            sign = URLEncoder.encode(new String(Base64.encodeBase64(signData)),"UTF-8");
+            sign = URLEncoder.encode(new String(Base64.encodeBase64(signData)), "UTF-8");
         } catch (Exception e) {
             logger.error("generate sign error, message:{}", e);
         }
@@ -326,6 +409,7 @@ public final class DingTalkSender {
     }
 
     static final class DingTalkSendMsgResponse {
+
         private Integer errcode;
         private String errmsg;
 
@@ -383,7 +467,8 @@ public final class DingTalkSender {
 
         @Override
         public String toString() {
-            return "DingTalkSender.DingTalkSendMsgResponse(errcode=" + this.getErrcode() + ", errmsg=" + this.getErrmsg() + ")";
+            return "DingTalkSender.DingTalkSendMsgResponse(errcode=" + this.getErrcode() + ", errmsg="
+                    + this.getErrmsg() + ")";
         }
     }
 }
