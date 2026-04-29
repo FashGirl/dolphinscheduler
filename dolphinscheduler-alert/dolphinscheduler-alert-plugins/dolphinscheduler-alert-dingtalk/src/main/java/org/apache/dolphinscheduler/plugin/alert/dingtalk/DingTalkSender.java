@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -262,6 +263,13 @@ public final class DingTalkSender {
 
         try {
             List<Map> dataList = JSONUtils.toList(content, Map.class);
+            List<Map> failureTasks = dataList.stream()
+                    .filter(map -> "FAILURE".equals(map.get("taskState")))
+                    .collect(Collectors.toList());
+            if (!failureTasks.isEmpty()) {
+                dataList = failureTasks;
+            }
+
             for (Map<String, Object> data : dataList) {
                 String taskState = (String) data.getOrDefault("taskState", "");
                 if (org.apache.commons.lang3.StringUtils.isNotBlank(taskState)) {

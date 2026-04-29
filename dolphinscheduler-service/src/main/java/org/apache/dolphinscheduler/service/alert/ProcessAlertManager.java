@@ -122,6 +122,7 @@ public class ProcessAlertManager {
                     .processStartTime(processInstance.getStartTime())
                     .processEndTime(processInstance.getEndTime())
                     .processHost(processInstance.getHost())
+                    .taskExecutorUser(processInstance.getExecutorName())
                     .build();
             successTaskList.add(processAlertContent);
             res = JSONUtils.toJsonString(successTaskList);
@@ -142,6 +143,7 @@ public class ProcessAlertManager {
                         .taskCode(task.getTaskCode())
                         .taskName(task.getName())
                         .taskType(task.getTaskType())
+                        .taskExecutorUser(task.getExecutorName())
                         .taskState(task.getState())
                         .taskStartTime(task.getStartTime())
                         .taskEndTime(task.getEndTime())
@@ -174,6 +176,7 @@ public class ProcessAlertManager {
                     .processName(processInstance.getName())
                     .taskCode(taskInstance.getTaskCode())
                     .taskName(taskInstance.getName())
+                    .taskExecutorUser(taskInstance.getExecutorName())
                     .taskHost(taskInstance.getHost())
                     .retryTimes(taskInstance.getRetryTimes())
                     .build();
@@ -428,6 +431,7 @@ public class ProcessAlertManager {
                 .processStartTime(processInstance.getStartTime())
                 .processEndTime(processInstance.getEndTime())
                 .processHost(processInstance.getHost())
+                .taskExecutorUser(processInstance.getExecutorName())
                 .build();
         blockingNodeList.add(processAlertContent);
         String content = JSONUtils.toJsonString(blockingNodeList);
