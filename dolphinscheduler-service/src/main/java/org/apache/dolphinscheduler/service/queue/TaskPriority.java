@@ -72,6 +72,11 @@ public class TaskPriority implements Comparable<TaskPriority> {
 
     private int taskGroupPriority;
 
+    /**
+     * whether the task is re-queued after dispatch failure
+     */
+    private boolean dispatchRetry;
+
     public TaskPriority() {
         this.checkpoint = System.currentTimeMillis();
     }
@@ -162,8 +167,20 @@ public class TaskPriority implements Comparable<TaskPriority> {
         this.taskGroupPriority = taskGroupPriority;
     }
 
+    public boolean isDispatchRetry() {
+        return dispatchRetry;
+    }
+
+    public void setDispatchRetry(boolean dispatchRetry) {
+        this.dispatchRetry = dispatchRetry;
+    }
+
     @Override
     public int compareTo(TaskPriority other) {
+        if (this.isDispatchRetry() != other.isDispatchRetry()) {
+            return this.isDispatchRetry() ? 1 : -1;
+        }
+
         if (this.getProcessInstancePriority() > other.getProcessInstancePriority()) {
             return 1;
         }
@@ -251,6 +268,8 @@ public class TaskPriority implements Comparable<TaskPriority> {
             + checkpoint
             + ", taskGroupPriority="
             + taskGroupPriority
+            + ", dispatchRetry="
+            + dispatchRetry
             + '}';
     }
 }

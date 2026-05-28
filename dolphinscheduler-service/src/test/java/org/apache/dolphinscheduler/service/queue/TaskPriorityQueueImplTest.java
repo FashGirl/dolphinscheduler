@@ -113,6 +113,45 @@ public class TaskPriorityQueueImplTest {
     }
 
     @Test
+    public void testDispatchRetrySortAfterFreshTasks() throws Exception {
+        TaskPriority freshTask = new TaskPriority(0, 0, 0, 1, 1, "default");
+        freshTask.setCheckpoint(100L);
+        TaskPriority retryTask = new TaskPriority(3, 0, 0, 2, 1, "default");
+        retryTask.setDispatchRetry(true);
+        retryTask.setCheckpoint(1L);
+
+        TaskPriorityQueue<TaskPriority> queue = new TaskPriorityQueueImpl();
+        queue.put(retryTask);
+        queue.put(freshTask);
+
+        TaskPriority first = queue.poll(1000, TimeUnit.MILLISECONDS);
+        TaskPriority second = queue.poll(1000, TimeUnit.MILLISECONDS);
+
+        Assert.assertEquals(freshTask, first);
+        Assert.assertEquals(retryTask, second);
+    }
+
+    @Test
+    public void testDispatchRetrySortByCheckpointAmongRetries() throws Exception {
+        TaskPriority earlierRetry = new TaskPriority(0, 0, 0, 1, 1, "default");
+        earlierRetry.setDispatchRetry(true);
+        earlierRetry.setCheckpoint(100L);
+        TaskPriority laterRetry = new TaskPriority(0, 0, 0, 2, 1, "default");
+        laterRetry.setDispatchRetry(true);
+        laterRetry.setCheckpoint(200L);
+
+        TaskPriorityQueue<TaskPriority> queue = new TaskPriorityQueueImpl();
+        queue.put(laterRetry);
+        queue.put(earlierRetry);
+
+        TaskPriority first = queue.poll(1000, TimeUnit.MILLISECONDS);
+        TaskPriority second = queue.poll(1000, TimeUnit.MILLISECONDS);
+
+        Assert.assertEquals(earlierRetry, first);
+        Assert.assertEquals(laterRetry, second);
+    }
+
+    @Test
     public void put() throws Exception {
         TaskPriorityQueue queue = getPriorityQueue();
         Assert.assertEquals(2, queue.size());

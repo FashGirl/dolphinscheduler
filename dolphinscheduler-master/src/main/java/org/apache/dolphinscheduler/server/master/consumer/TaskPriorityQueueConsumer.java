@@ -131,6 +131,8 @@ public class TaskPriorityQueueConsumer extends BaseDaemonThread {
                     logger.info("{} tasks dispatch failed, will retry to dispatch", failedDispatchTasks.size());
                     TaskMetrics.incTaskDispatchFailed(failedDispatchTasks.size());
                     for (TaskPriority dispatchFailedTask : failedDispatchTasks) {
+                        dispatchFailedTask.setDispatchRetry(true);
+                        dispatchFailedTask.setCheckpoint(System.currentTimeMillis());
                         taskPriorityQueue.put(dispatchFailedTask);
                     }
                     // If the all task dispatch failed, will sleep for 1s to avoid the master cpu higher.
