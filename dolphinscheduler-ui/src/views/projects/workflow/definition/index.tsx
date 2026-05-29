@@ -20,11 +20,10 @@ import {
   NButton,
   NDataTable,
   NIcon,
-  NInput,
   NPagination,
   NSpace,
   NTooltip,
-  NPopconfirm
+  NPopconfirm,
 } from 'naive-ui'
 import {
   defineComponent,
@@ -37,6 +36,8 @@ import { useI18n } from 'vue-i18n'
 import { useTable } from './use-table'
 import { useRouter, useRoute } from 'vue-router'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import ImportModal from './components/import-modal'
 import StartModal from './components/start-modal'
 import TimingModal from './components/timing-modal'
@@ -59,8 +60,19 @@ export default defineComponent({
       batchExportWorkflow,
       batchCopyWorkflow
     } = useTable()
+const LIST_SEARCH_FIELDS = [
+  'searchVal',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
 
     const requestData = () => {
+      persistSearchState()
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
@@ -154,7 +166,8 @@ export default defineComponent({
               </NButton>
             </NSpace>
             <NSpace>
-              <NInput
+              <SearchInput
+                onSearch={this.handleSearch}
                 allowInput={this.trim}
                 size='small'
                 placeholder={t('resource.function.enter_keyword_tips')}

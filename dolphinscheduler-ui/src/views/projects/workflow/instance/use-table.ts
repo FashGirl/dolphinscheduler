@@ -65,6 +65,7 @@ export function useTable() {
     stateType: ref(),
     startDate: ref(),
     endDate: ref(),
+    startEndTime: ref<[number, number] | null>(null),
     projectCode: ref(Number(router.currentRoute.value.params.projectCode)),
     loadingRef: ref(false)
   })

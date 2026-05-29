@@ -24,25 +24,40 @@ import {
 } from 'vue'
 import {
   NSpace,
-  NInput,
   NSelect,
   NDatePicker,
   NButton,
   NIcon,
   NDataTable,
-  NPagination
+  NPagination,
 } from 'naive-ui'
 import { SearchOutlined } from '@vicons/antd'
 import { useTable } from './use-table'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 
 const TaskResult = defineComponent({
   name: 'task-result',
   setup() {
     const { t, variables, getTableData, createColumns } = useTable()
+const LIST_SEARCH_FIELDS = [
+  'searchVal',
+  'ruleType',
+  'state',
+  'datePickerRange',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
 
     const requestTableData = () => {
+      persistSearchState()
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
@@ -90,7 +105,8 @@ const TaskResult = defineComponent({
       <NSpace vertical>
         <Card>
           <NSpace justify='end'>
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={this.trim}
               v-model={[this.searchVal, 'value']}
               size='small'

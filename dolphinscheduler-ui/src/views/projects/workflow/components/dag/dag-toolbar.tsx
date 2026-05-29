@@ -25,7 +25,7 @@ import {
   NSelect,
   NPopover,
   NText,
-  NTag
+  NTag,
 } from 'naive-ui'
 import {
   SearchOutlined,

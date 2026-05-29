@@ -18,11 +18,10 @@
 import { defineComponent, getCurrentInstance, toRefs } from 'vue'
 import {
   NButton,
-  NInput,
   NIcon,
   NSpace,
   NDataTable,
-  NPagination
+  NPagination,
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { SearchOutlined } from '@vicons/antd'
@@ -31,6 +30,8 @@ import { useTable } from './use-table'
 import UserDetailModal from './components/user-detail-modal'
 import AuthorizeModal from './components/authorize-modal'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 
 const UsersManage = defineComponent({
   name: 'user-manage',
@@ -39,6 +40,27 @@ const UsersManage = defineComponent({
     const { state, changePage, changePageSize, updateList, onOperationClick } =
       useTable()
     const { columnsRef } = useColumns(onOperationClick)
+
+    const LIST_SEARCH_FIELDS = ['searchVal', 'page', 'pageSize'] as const
+    const { persist: persistSearchState } = useListSearchState(
+      state,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof state)[]
+    )
+
+    const onUpdatedList = () => {
+      persistSearchState()
+      updateList()
+    }
+
+    const onChangePage = (page: number) => {
+      changePage(page)
+      persistSearchState()
+    }
+
+    const onChangePageSize = (pageSize: number) => {
+      changePageSize(pageSize)
+      persistSearchState()
+    }
 
     const onAddUser = () => {
       state.detailModalShow = true
@@ -56,10 +78,10 @@ const UsersManage = defineComponent({
       t,
       columnsRef,
       ...toRefs(state),
-      changePage,
-      changePageSize,
+      changePage: onChangePage,
+      changePageSize: onChangePageSize,
       onAddUser,
-      onUpdatedList: updateList,
+      onUpdatedList,
       onDetailModalCancel,
       onAuthorizeModalCancel,
       trim
@@ -79,7 +101,8 @@ const UsersManage = defineComponent({
               {this.t('security.user.create_user')}
             </NButton>
             <NSpace>
-              <NInput
+              <SearchInput
+                onSearch={this.onUpdatedList}
                 allowInput={this.trim}
                 v-model:value={this.searchVal}
                 size='small'

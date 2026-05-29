@@ -22,7 +22,7 @@ import {
   NSpace,
   NRadioGroup,
   NRadioButton,
-  NTreeSelect
+  NTreeSelect,
 } from 'naive-ui'
 import { useAuthorize } from './use-authorize'
 import Modal from '@/components/modal'

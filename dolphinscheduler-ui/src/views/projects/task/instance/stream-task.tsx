@@ -25,13 +25,12 @@ import {
 } from 'vue'
 import {
   NSpace,
-  NInput,
   NSelect,
   NDatePicker,
   NButton,
   NIcon,
   NDataTable,
-  NPagination
+  NPagination,
 } from 'naive-ui'
 import { SearchOutlined } from '@vicons/antd'
 import { useTable } from './use-stream-table'
@@ -40,6 +39,8 @@ import { useAsyncState } from '@vueuse/core'
 import { queryLog } from '@/service/modules/log'
 import { streamStateType } from '@/common/common'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import LogModal from '@/components/log-modal'
 
 const BatchTaskInstance = defineComponent({
@@ -47,15 +48,35 @@ const BatchTaskInstance = defineComponent({
   setup() {
     let setIntervalP: number
     const { t, variables, getTableData, createColumns } = useTable()
+const LIST_SEARCH_FIELDS = [
+  'searchVal',
+  'processDefinitionName',
+  'executorName',
+  'host',
+  'stateType',
+  'datePickerRange',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
+
+    const requestTableData = () => {
+      persistSearchState()
+      getTableData()
+    }
 
     const onUpdatePageSize = () => {
       variables.page = 1
-      getTableData()
+      requestTableData()
     }
 
     const onSearch = () => {
       variables.page = 1
-      getTableData()
+      requestTableData()
     }
 
     const onClearSearchTaskName = () => {
@@ -125,9 +146,9 @@ const BatchTaskInstance = defineComponent({
 
     onMounted(() => {
       createColumns(variables)
-      getTableData()
+      requestTableData()
       setIntervalP = setInterval(() => {
-        getTableData()
+        requestTableData()
       }, 3000)
     })
 
@@ -157,7 +178,7 @@ const BatchTaskInstance = defineComponent({
     return {
       t,
       ...toRefs(variables),
-      getTableData,
+      requestTableData,
       onUpdatePageSize,
       onSearch,
       onClearSearchTaskName,
@@ -174,7 +195,7 @@ const BatchTaskInstance = defineComponent({
   render() {
     const {
       t,
-      getTableData,
+      requestTableData,
       onUpdatePageSize,
       onSearch,
       onConfirmModal,
@@ -186,7 +207,8 @@ const BatchTaskInstance = defineComponent({
       <NSpace vertical>
         <Card>
           <NSpace justify='end' wrap={false}>
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={this.trim}
               v-model={[this.searchVal, 'value']}
               size='small'
@@ -194,7 +216,8 @@ const BatchTaskInstance = defineComponent({
               clearable
               onClear={this.onClearSearchTaskName}
             />
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={this.trim}
               v-model={[this.processDefinitionName, 'value']}
               size='small'
@@ -202,7 +225,8 @@ const BatchTaskInstance = defineComponent({
               clearable
               onClear={this.onClearSearchWorkFlowName}
             />
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={this.trim}
               v-model={[this.executorName, 'value']}
               size='small'
@@ -210,7 +234,8 @@ const BatchTaskInstance = defineComponent({
               clearable
               onClear={this.onClearSearchExecutorName}
             />
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={this.trim}
               v-model={[this.host, 'value']}
               size='small'
@@ -259,7 +284,7 @@ const BatchTaskInstance = defineComponent({
                 show-size-picker
                 page-sizes={[10, 30, 50]}
                 show-quick-jumper
-                onUpdatePage={getTableData}
+                onUpdatePage={requestTableData}
                 onUpdatePageSize={onUpdatePageSize}
               />
             </NSpace>

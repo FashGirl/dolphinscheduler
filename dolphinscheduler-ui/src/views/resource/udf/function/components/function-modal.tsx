@@ -34,7 +34,7 @@ import {
   NRadio,
   NTreeSelect,
   NButton,
-  NRadioGroup
+  NRadioGroup,
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { CloudUploadOutlined } from '@vicons/antd'

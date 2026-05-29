@@ -20,9 +20,8 @@ import {
   NButton,
   NDataTable,
   NIcon,
-  NInput,
   NPagination,
-  NSpace
+  NSpace,
 } from 'naive-ui'
 import {
   defineComponent,
@@ -34,6 +33,8 @@ import {
 import { useI18n } from 'vue-i18n'
 import { useTable } from './use-table'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import ProjectModal from './components/project-modal'
 
 const list = defineComponent({
@@ -41,8 +42,19 @@ const list = defineComponent({
   setup() {
     const { t } = useI18n()
     const { variables, getTableData, createColumns } = useTable()
+const LIST_SEARCH_FIELDS = [
+  'searchVal',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
 
     const requestData = () => {
+      persistSearchState()
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
@@ -121,7 +133,8 @@ const list = defineComponent({
               {t('project.list.create_project')}
             </NButton>
             <NSpace>
-              <NInput
+              <SearchInput
+                onSearch={this.handleSearch}
                 allowInput={this.trim}
                 size='small'
                 v-model={[this.searchVal, 'value']}

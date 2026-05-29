@@ -26,23 +26,35 @@ import {
   NButton,
   NDataTable,
   NIcon,
-  NInput,
   NPagination,
-  NSpace
+  NSpace,
 } from 'naive-ui'
 import { SearchOutlined } from '@vicons/antd'
 import { useI18n } from 'vue-i18n'
 import { useTable } from './use-table'
 import EnvironmentModal from './components/environment-modal'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 
 const environmentManage = defineComponent({
   name: 'environment-manage',
   setup() {
     const { t } = useI18n()
     const { variables, getTableData, createColumns } = useTable()
+const LIST_SEARCH_FIELDS = [
+  'searchVal',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
 
     const requestData = () => {
+      persistSearchState()
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
@@ -122,7 +134,8 @@ const environmentManage = defineComponent({
               {t('security.environment.create_environment')}
             </NButton>
             <NSpace>
-              <NInput
+              <SearchInput
+                onSearch={onSearch}
                 allowInput={this.trim}
                 size='small'
                 clearable

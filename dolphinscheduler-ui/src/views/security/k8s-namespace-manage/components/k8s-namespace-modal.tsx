@@ -29,7 +29,7 @@ import {
   NInput,
   NInputGroup,
   NInputGroupLabel,
-  NSelect
+  NSelect,
 } from 'naive-ui'
 import { useModal } from './use-modal'
 import { useI18n } from 'vue-i18n'

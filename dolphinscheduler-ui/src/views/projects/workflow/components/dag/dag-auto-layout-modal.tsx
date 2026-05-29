@@ -24,7 +24,7 @@ import {
   NFormItem,
   NInputNumber,
   NRadioButton,
-  NRadioGroup
+  NRadioGroup,
 } from 'naive-ui'
 import { LAYOUT_TYPE } from './use-graph-auto-layout'
 import './x6-style.scss'

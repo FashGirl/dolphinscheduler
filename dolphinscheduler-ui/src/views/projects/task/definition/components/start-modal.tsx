@@ -34,7 +34,7 @@ import {
   NInput,
   NSpace,
   NSelect,
-  NSwitch
+  NSwitch,
 } from 'naive-ui'
 import { DeleteOutlined, PlusCircleOutlined } from '@vicons/antd'
 

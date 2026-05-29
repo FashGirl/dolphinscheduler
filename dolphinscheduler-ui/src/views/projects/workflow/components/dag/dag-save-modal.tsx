@@ -34,7 +34,7 @@ import {
   NSwitch,
   NInputNumber,
   NDynamicInput,
-  NCheckbox
+  NCheckbox,
 } from 'naive-ui'
 import { queryTenantList } from '@/service/modules/tenants'
 import { useRoute } from 'vue-router'

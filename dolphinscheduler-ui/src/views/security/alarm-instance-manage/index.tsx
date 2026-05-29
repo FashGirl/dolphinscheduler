@@ -25,14 +25,15 @@ import {
 } from 'vue'
 import {
   NButton,
-  NInput,
   NIcon,
   NDataTable,
   NPagination,
-  NSpace
+  NSpace,
 } from 'naive-ui'
 import DetailModal from './detail'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import { SearchOutlined } from '@vicons/antd'
 import { useI18n } from 'vue-i18n'
 import { useUserInfo } from './use-userinfo'
@@ -50,6 +51,27 @@ const AlarmInstanceManage = defineComponent({
     const { IS_ADMIN } = useUserInfo()
     const { data, changePage, changePageSize, deleteRecord, updateList } =
       useTable()
+
+    const LIST_SEARCH_FIELDS = ['searchVal', 'page', 'pageSize'] as const
+    const { persist: persistSearchState } = useListSearchState(
+      data,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof data)[]
+    )
+
+    const onUpdatedList = () => {
+      persistSearchState()
+      updateList()
+    }
+
+    const onChangePage = (page: number) => {
+      changePage(page)
+      persistSearchState()
+    }
+
+    const onChangePageSize = (pageSize: number) => {
+      changePageSize(pageSize)
+      persistSearchState()
+    }
 
     const { getColumns } = useColumns(
       (record: IRecord, type: 'edit' | 'delete') => {
@@ -75,7 +97,7 @@ const AlarmInstanceManage = defineComponent({
     const trim = getCurrentInstance()?.appContext.config.globalProperties.trim
 
     onMounted(() => {
-      changePage(1)
+      onUpdatedList()
       columns.value = getColumns()
     })
 
@@ -90,11 +112,11 @@ const AlarmInstanceManage = defineComponent({
       currentRecord: currentRecord,
       columns,
       ...toRefs(data),
-      changePage,
-      changePageSize,
+      changePage: onChangePage,
+      changePageSize: onChangePageSize,
       onCreate,
       onCloseModal,
-      onUpdatedList: updateList,
+      onUpdatedList,
       trim
     }
   },
@@ -129,7 +151,8 @@ const AlarmInstanceManage = defineComponent({
                   </NButton>
                 )}
                 <NSpace justify='end' wrap={false}>
-                  <NInput
+                  <SearchInput
+                    onSearch={onUpdatedList}
                     allowInput={this.trim}
                     v-model={[this.searchVal, 'value']}
                     size='small'

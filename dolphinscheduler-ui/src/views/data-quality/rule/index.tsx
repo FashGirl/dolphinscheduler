@@ -24,25 +24,37 @@ import {
 } from 'vue'
 import {
   NSpace,
-  NInput,
   NButton,
   NIcon,
   NDataTable,
-  NPagination
+  NPagination,
 } from 'naive-ui'
 import { SearchOutlined } from '@vicons/antd'
 import { useTable } from './use-table'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import RuleModal from './components/rule-modal'
 
 const TaskResult = defineComponent({
   name: 'rule',
   setup() {
     const { t, variables, getTableData } = useTable()
+const LIST_SEARCH_FIELDS = [
+  'searchVal',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
     const showModalRef = ref(false)
     const ruleEntryData = ref('')
 
     const requestTableData = () => {
+      persistSearchState()
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
@@ -115,7 +127,8 @@ const TaskResult = defineComponent({
       <NSpace vertical>
         <Card>
           <NSpace justify='end'>
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={this.trim}
               v-model={[this.searchVal, 'value']}
               size='small'

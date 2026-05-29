@@ -30,14 +30,15 @@ import {
   NDataTable,
   NButton,
   NPagination,
-  NInput,
   NBreadcrumb,
-  NBreadcrumbItem
+  NBreadcrumbItem,
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { useTable } from './use-table'
 import { SearchOutlined } from '@vicons/antd'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import FolderModal from './components/folder-modal'
 import UploadModal from './components/upload-modal'
 import styles from './index.module.scss'
@@ -48,7 +49,14 @@ export default defineComponent({
     const { variables, createColumns, getTableData, goUdfManage, goBread } =
       useTable()
 
+    const LIST_SEARCH_FIELDS = ['searchVal', 'page', 'pageSize', 'id'] as const
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
+
     const requestData = () => {
+      persistSearchState()
       getTableData({
         id: variables.id,
         pageSize: variables.pageSize,
@@ -146,7 +154,8 @@ export default defineComponent({
               </NButton>
             </NSpace>
             <NSpace>
-              <NInput
+              <SearchInput
+                onSearch={this.handleSearch}
                 allowInput={this.trim}
                 size='small'
                 placeholder={t('resource.udf.enter_keyword_tips')}

@@ -26,12 +26,13 @@ import {
 import {
   NButton,
   NIcon,
-  NInput,
   NDataTable,
   NPagination,
-  NSpace
+  NSpace,
 } from 'naive-ui'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import { SearchOutlined } from '@vicons/antd'
 import { useI18n } from 'vue-i18n'
 import { useTable } from './use-table'
@@ -42,6 +43,16 @@ const taskGroupOption = defineComponent({
   setup() {
     const { t } = useI18n()
     const { variables, getTableData } = useTable()
+const LIST_SEARCH_FIELDS = [
+  'name',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
     const showModalRef = ref(false)
     const modelStatusRef = ref(0)
 
@@ -57,6 +68,7 @@ const taskGroupOption = defineComponent({
     })
 
     const requestData = () => {
+      persistSearchState()
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
@@ -163,14 +175,15 @@ const taskGroupOption = defineComponent({
               {t('resource.task_group_option.create')}
             </NButton>
             <NSpace>
-              <NInput
+              <SearchInput
+                onSearch={onSearch}
                 allowInput={this.trim}
                 size='small'
                 v-model={[this.name, 'value']}
                 placeholder={t(
                   'resource.task_group_option.please_enter_keywords'
                 )}
-              ></NInput>
+              />
               <NButton size='small' type='primary' onClick={onSearch}>
                 <NIcon>
                   <SearchOutlined />

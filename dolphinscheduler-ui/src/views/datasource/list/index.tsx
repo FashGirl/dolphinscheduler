@@ -25,11 +25,10 @@ import {
 } from 'vue'
 import {
   NButton,
-  NInput,
   NIcon,
   NDataTable,
   NPagination,
-  NSpace
+  NSpace,
 } from 'naive-ui'
 import { SearchOutlined } from '@vicons/antd'
 import { useI18n } from 'vue-i18n'
@@ -37,6 +36,8 @@ import { useColumns } from './use-columns'
 import { useTable } from './use-table'
 import { DefaultTableWidth } from '@/common/column-width-config'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import DetailModal from './detail'
 import type { TableColumns } from './types'
 
@@ -52,6 +53,27 @@ const list = defineComponent({
     })
     const { data, changePage, changePageSize, deleteRecord, updateList } =
       useTable()
+
+    const LIST_SEARCH_FIELDS = ['searchVal', 'page', 'pageSize'] as const
+    const { persist: persistSearchState } = useListSearchState(
+      data,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof data)[]
+    )
+
+    const onUpdatedList = () => {
+      persistSearchState()
+      updateList()
+    }
+
+    const onChangePage = (page: number) => {
+      changePage(page)
+      persistSearchState()
+    }
+
+    const onChangePageSize = (pageSize: number) => {
+      changePageSize(pageSize)
+      persistSearchState()
+    }
 
     const { getColumns } = useColumns((id: number, type: 'edit' | 'delete') => {
       if (type === 'edit') {
@@ -70,7 +92,7 @@ const list = defineComponent({
     const trim = getCurrentInstance()?.appContext.config.globalProperties.trim
 
     onMounted(() => {
-      changePage(1)
+      onUpdatedList()
       columns.value = getColumns()
     })
 
@@ -84,10 +106,10 @@ const list = defineComponent({
       id: selectId,
       columns,
       ...toRefs(data),
-      changePage,
-      changePageSize,
+      changePage: onChangePage,
+      changePageSize: onChangePageSize,
       onCreate,
-      onUpdatedList: updateList,
+      onUpdatedList,
       trim
     }
   },
@@ -121,7 +143,8 @@ const list = defineComponent({
               {t('datasource.create_datasource')}
             </NButton>
             <NSpace justify='end' wrap={false}>
-              <NInput
+              <SearchInput
+                onSearch={onUpdatedList}
                 allowInput={this.trim}
                 v-model={[this.searchVal, 'value']}
                 size='small'

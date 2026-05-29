@@ -19,18 +19,19 @@ import { useI18n } from 'vue-i18n'
 import { SearchOutlined } from '@vicons/antd'
 import { defineComponent, getCurrentInstance, watch, onMounted } from 'vue'
 import {
-  NInput,
   NButton,
   NIcon,
   NSpace,
   NDataTable,
-  NPagination
+  NPagination,
 } from 'naive-ui'
 import { useRoute } from 'vue-router'
 import { useTable } from './use-stream-table'
 import { useTask } from './use-task'
 import StartModal from './components/start-modal'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import TaskModal from '@/views/projects/task/components/node/detail-modal'
 import type { INodeData } from './types'
 
@@ -45,19 +46,35 @@ const StreamTaskDefinition = defineComponent({
     const { task, onToggleShow, onEditTask, onInitTask, onUpdateTask } =
       useTask(projectCode)
     const { variables, getTableData, createColumns } = useTable(onEditTask)
+const LIST_SEARCH_FIELDS = [
+  'searchTaskName',
+  'searchWorkflowName',
+  'page',
+  'pageSize'
+] as const
 
-    const onSearch = () => {
-      variables.page = 1
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
+
+    const requestTableData = () => {
+      persistSearchState()
       getTableData()
     }
 
+    const onSearch = () => {
+      variables.page = 1
+      requestTableData()
+    }
+
     const onRefresh = () => {
-      getTableData()
+      requestTableData()
     }
 
     const onUpdatePageSize = () => {
       variables.page = 1
-      getTableData()
+      requestTableData()
     }
 
     const onTaskCancel = () => {
@@ -75,7 +92,7 @@ const StreamTaskDefinition = defineComponent({
 
     onMounted(() => {
       createColumns(variables)
-      getTableData()
+      requestTableData()
     })
 
     watch(useI18n().locale, () => {
@@ -86,14 +103,16 @@ const StreamTaskDefinition = defineComponent({
       <NSpace vertical>
         <Card>
           <NSpace justify='end'>
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={trim}
               size='small'
               clearable
               v-model={[variables.searchTaskName, 'value']}
               placeholder={t('project.task.task_name')}
             />
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={trim}
               size='small'
               clearable
@@ -123,7 +142,7 @@ const StreamTaskDefinition = defineComponent({
                 show-size-picker
                 page-sizes={[10, 30, 50]}
                 show-quick-jumper
-                onUpdatePage={getTableData}
+                onUpdatePage={requestTableData}
                 onUpdatePageSize={onUpdatePageSize}
               />
             </NSpace>

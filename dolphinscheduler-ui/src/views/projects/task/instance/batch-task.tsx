@@ -24,13 +24,12 @@ import {
 } from 'vue'
 import {
   NSpace,
-  NInput,
   NSelect,
   NDatePicker,
   NButton,
   NIcon,
   NDataTable,
-  NPagination
+  NPagination,
 } from 'naive-ui'
 import { SearchOutlined } from '@vicons/antd'
 import { useTable } from './use-table'
@@ -39,14 +38,32 @@ import { useAsyncState } from '@vueuse/core'
 import { queryLog } from '@/service/modules/log'
 import { stateType } from '@/common/common'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import LogModal from '@/components/log-modal'
 
 const BatchTaskInstance = defineComponent({
   name: 'task-instance',
   setup() {
     const { t, variables, getTableData, createColumns } = useTable()
+const LIST_SEARCH_FIELDS = [
+  'searchVal',
+  'processInstanceName',
+  'executorName',
+  'host',
+  'stateType',
+  'datePickerRange',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
 
     const requestTableData = () => {
+      persistSearchState()
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
@@ -191,7 +208,8 @@ const BatchTaskInstance = defineComponent({
       <NSpace vertical>
         <Card>
           <NSpace justify='end' wrap={false}>
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={this.trim}
               v-model={[this.searchVal, 'value']}
               size='small'
@@ -199,7 +217,8 @@ const BatchTaskInstance = defineComponent({
               clearable
               onClear={this.onClearSearchTaskName}
             />
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={this.trim}
               v-model={[this.processInstanceName, 'value']}
               size='small'
@@ -207,7 +226,8 @@ const BatchTaskInstance = defineComponent({
               clearable
               onClear={this.onClearSearchProcessInstanceName}
             />
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={this.trim}
               v-model={[this.executorName, 'value']}
               size='small'
@@ -215,7 +235,8 @@ const BatchTaskInstance = defineComponent({
               clearable
               onClear={this.onClearSearchExecutorName}
             />
-            <NInput
+            <SearchInput
+              onSearch={onSearch}
               allowInput={this.trim}
               v-model={[this.host, 'value']}
               size='small'

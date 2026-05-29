@@ -23,7 +23,7 @@ import {
   NSwitch,
   NForm,
   NFormItem,
-  useMessage
+  useMessage,
 } from 'naive-ui'
 import { useForm } from './use-form'
 import { useTranslate } from './use-translate'

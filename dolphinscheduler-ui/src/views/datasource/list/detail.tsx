@@ -32,7 +32,7 @@ import {
   NInputNumber,
   NRadioGroup,
   NRadio,
-  NSpace
+  NSpace,
 } from 'naive-ui'
 import Modal from '@/components/modal'
 import { useI18n } from 'vue-i18n'

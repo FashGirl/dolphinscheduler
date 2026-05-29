@@ -27,10 +27,9 @@ import {
   NButton,
   NDataTable,
   NIcon,
-  NInput,
   NPagination,
   NSelect,
-  NSpace
+  NSpace,
 } from 'naive-ui'
 import { SearchOutlined } from '@vicons/antd'
 import { useI18n } from 'vue-i18n'
@@ -38,6 +37,8 @@ import { useTable } from './use-table'
 import { useTask } from './use-task'
 import { TASK_TYPES_MAP } from '@/views/projects/task/constants/task-type'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import VersionModal from './components/version-modal'
 import TaskModal from '@/views/projects/task/components/node/detail-modal'
 import type { INodeData } from './types'
@@ -53,8 +54,21 @@ const BatchTaskDefinition = defineComponent({
       useTask(projectCode)
 
     const { variables, getTableData, createColumns } = useTable(onEditTask)
+const LIST_SEARCH_FIELDS = [
+  'searchTaskName',
+  'searchWorkflowName',
+  'taskType',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
 
     const requestData = () => {
+      persistSearchState()
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
@@ -155,7 +169,8 @@ const BatchTaskDefinition = defineComponent({
               {t('project.task.create_task')}
             </NButton>
             <NSpace>
-              <NInput
+              <SearchInput
+                onSearch={onSearch}
                 allowInput={this.trim}
                 size='small'
                 clearable
@@ -163,7 +178,8 @@ const BatchTaskDefinition = defineComponent({
                 placeholder={t('project.task.task_name')}
                 onClear={this.onClearSearchTaskName}
               />
-              <NInput
+              <SearchInput
+                onSearch={onSearch}
                 allowInput={this.trim}
                 size='small'
                 clearable

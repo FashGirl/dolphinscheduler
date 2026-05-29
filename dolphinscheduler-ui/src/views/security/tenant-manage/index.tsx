@@ -24,25 +24,37 @@ import {
 } from 'vue'
 import {
   NButton,
-  NInput,
   NIcon,
   NDataTable,
   NPagination,
-  NSpace
+  NSpace,
 } from 'naive-ui'
 import { useTable } from './use-table'
 import { SearchOutlined } from '@vicons/antd'
 import { useI18n } from 'vue-i18n'
 import TenantModal from './components/tenant-modal'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 
 const tenementManage = defineComponent({
   name: 'tenement-manage',
   setup() {
     const { variables, getTableData, createColumns } = useTable()
+const LIST_SEARCH_FIELDS = [
+  'searchVal',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
     const { t } = useI18n()
 
     const requestData = () => {
+      persistSearchState()
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
@@ -112,7 +124,8 @@ const tenementManage = defineComponent({
               {t('security.tenant.create_tenant')}
             </NButton>
             <NSpace>
-              <NInput
+              <SearchInput
+                onSearch={this.handleSearch}
                 allowInput={this.trim}
                 size='small'
                 v-model={[this.searchVal, 'value']}

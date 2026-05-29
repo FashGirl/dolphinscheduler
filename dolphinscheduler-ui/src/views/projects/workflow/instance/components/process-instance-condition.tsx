@@ -16,69 +16,88 @@
  */
 
 import { SearchOutlined } from '@vicons/antd'
-import { NInput, NButton, NDatePicker, NSelect, NIcon, NSpace } from 'naive-ui'
-import { defineComponent, getCurrentInstance, ref } from 'vue'
+import { NButton, NDatePicker, NSelect, NIcon, NSpace } from 'naive-ui'
+import { defineComponent, getCurrentInstance, PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { format } from 'date-fns'
+import SearchInput from '@/components/search-input'
 import { workflowExecutionStateType } from '@/common/common'
 
 export default defineComponent({
   name: 'ProcessInstanceCondition',
-  emits: ['handleSearch'],
+  props: {
+    searchVal: {
+      type: String,
+      default: ''
+    },
+    executorName: {
+      type: String,
+      default: ''
+    },
+    host: {
+      type: String,
+      default: ''
+    },
+    stateType: {
+      type: String,
+      default: ''
+    },
+    startEndTime: {
+      type: Array as unknown as PropType<[number, number] | null>,
+      default: null
+    }
+  },
+  emits: [
+    'update:searchVal',
+    'update:executorName',
+    'update:host',
+    'update:stateType',
+    'update:startEndTime',
+    'handleSearch'
+  ],
   setup(props, ctx) {
-    const searchValRef = ref('')
-    const executorNameRef = ref('')
-    const hostRef = ref('')
-    const stateTypeRef = ref('')
-    const startEndTimeRef = ref()
-
     const handleSearch = () => {
       let startDate = ''
       let endDate = ''
-      if (startEndTimeRef.value) {
+      if (props.startEndTime) {
         startDate = format(
-          new Date(startEndTimeRef.value[0]),
+          new Date(props.startEndTime[0]),
           'yyyy-MM-dd HH:mm:ss'
         )
         endDate = format(
-          new Date(startEndTimeRef.value[1]),
+          new Date(props.startEndTime[1]),
           'yyyy-MM-dd HH:mm:ss'
         )
       }
 
       ctx.emit('handleSearch', {
-        searchVal: searchValRef.value,
-        executorName: executorNameRef.value,
-        host: hostRef.value,
-        stateType: stateTypeRef.value,
+        searchVal: props.searchVal,
+        executorName: props.executorName,
+        host: props.host,
+        stateType: props.stateType,
         startDate,
         endDate
       })
     }
 
     const onClearSearchVal = () => {
-      searchValRef.value = ''
+      ctx.emit('update:searchVal', '')
       handleSearch()
     }
 
     const onClearSearchHost = () => {
-      hostRef.value = ''
+      ctx.emit('update:host', '')
       handleSearch()
     }
 
     const onClearSearchExecutor = () => {
-      executorNameRef.value = ''
+      ctx.emit('update:executorName', '')
       handleSearch()
     }
 
     const trim = getCurrentInstance()?.appContext.config.globalProperties.trim
 
     return {
-      searchValRef,
-      executorNameRef,
-      hostRef,
-      stateTypeRef,
-      startEndTimeRef,
       handleSearch,
       onClearSearchVal,
       onClearSearchExecutor,
@@ -92,26 +111,36 @@ export default defineComponent({
 
     return (
       <NSpace justify='end'>
-        <NInput
+        <SearchInput
+          onSearch={this.handleSearch}
           allowInput={this.trim}
           size='small'
-          v-model:value={this.searchValRef}
+          value={this.searchVal}
+          onUpdateValue={(value: string) =>
+            this.$emit('update:searchVal', value)
+          }
           placeholder={t('project.workflow.name')}
           clearable
           onClear={this.onClearSearchVal}
         />
-        <NInput
+        <SearchInput
+          onSearch={this.handleSearch}
           allowInput={this.trim}
           size='small'
-          v-model:value={this.executorNameRef}
+          value={this.executorName}
+          onUpdateValue={(value: string) =>
+            this.$emit('update:executorName', value)
+          }
           placeholder={t('project.workflow.executor')}
           clearable
           onClear={this.onClearSearchExecutor}
         />
-        <NInput
+        <SearchInput
+          onSearch={this.handleSearch}
           allowInput={this.trim}
           size='small'
-          v-model:value={this.hostRef}
+          value={this.host}
+          onUpdateValue={(value: string) => this.$emit('update:host', value)}
           placeholder={t('project.workflow.host')}
           clearable
           onClear={this.onClearSearchHost}
@@ -121,13 +150,19 @@ export default defineComponent({
           size='small'
           style={{ width: '210px' }}
           defaultValue={''}
-          v-model:value={this.stateTypeRef}
+          value={this.stateType}
+          onUpdateValue={(value: string) =>
+            this.$emit('update:stateType', value)
+          }
         />
         <NDatePicker
           type='datetimerange'
           size='small'
           clearable
-          v-model:value={this.startEndTimeRef}
+          value={this.startEndTime}
+          onUpdateValue={(value: [number, number] | null) =>
+            this.$emit('update:startEndTime', value)
+          }
         />
         <NButton type='primary' size='small' onClick={this.handleSearch}>
           <NIcon>

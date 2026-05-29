@@ -30,7 +30,7 @@ import {
   NSelect,
   NRadio,
   NRadioGroup,
-  NSpace
+  NSpace,
 } from 'naive-ui'
 import { useUserDetail } from './use-user-detail'
 import Modal from '@/components/modal'

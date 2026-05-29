@@ -31,9 +31,8 @@ import {
   NButtonGroup,
   NButton,
   NPagination,
-  NInput,
   NBreadcrumb,
-  NBreadcrumbItem
+  NBreadcrumbItem,
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { SearchOutlined } from '@vicons/antd'
@@ -46,6 +45,8 @@ import {
   queryResourceById
 } from '@/service/modules/resources'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import ResourceFolderModal from './folder'
 import ResourceUploadModal from './upload'
 import ResourceRenameModal from './rename'
@@ -63,58 +64,69 @@ export default defineComponent({
     const folderShowRef = ref(false)
     const uploadShowRef = ref(false)
     const renameShowRef = ref(false)
-    const searchRef = ref()
 
-    const renameInfo = reactive({
-      id: -1,
-      name: '',
-      description: ''
-    })
-
-    const paginationReactive = reactive({
+    const listState = reactive({
+      searchVal: null as string | null,
       page: 1,
       pageSize: 10,
       itemCount: 0,
       pageSizes: [10, 30, 50]
     })
 
-    const handleUpdatePage = (page: number) => {
-      paginationReactive.page = page
+    const LIST_SEARCH_FIELDS = ['searchVal', 'page', 'pageSize'] as const
+    const { persist: persistSearchState } = useListSearchState(
+      listState,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof listState)[]
+    )
+
+    const setPagination = (count: number) => {
+      listState.itemCount = count
+    }
+
+    const { getResourceListState } = useFileState(setPagination)
+
+    const fetchResourceList = (
+      page = listState.page,
+      pageSize = listState.pageSize
+    ) => {
       resourceListRef.value = getResourceListState(
         fileId.value,
-        searchRef.value,
-        paginationReactive.page,
-        paginationReactive.pageSize
+        listState.searchVal ?? undefined,
+        page,
+        pageSize
       )
     }
 
-    const handleUpdatePageSize = (pageSize: number) => {
-      paginationReactive.page = 1
-      paginationReactive.pageSize = pageSize
-      resourceListRef.value = getResourceListState(
-        fileId.value,
-        searchRef.value,
-        paginationReactive.page,
-        paginationReactive.pageSize
-      )
+    const requestResourceList = () => {
+      persistSearchState()
+      fetchResourceList()
     }
 
     const handleShowModal = (showRef: Ref<Boolean>) => {
       showRef.value = true
     }
 
-    const setPagination = (count: number) => {
-      paginationReactive.itemCount = count
+    const handleUpdatePage = (page: number) => {
+      listState.page = page
+      requestResourceList()
     }
 
-    const { getResourceListState } = useFileState(setPagination)
+    const handleUpdatePageSize = (pageSize: number) => {
+      listState.page = 1
+      listState.pageSize = pageSize
+      requestResourceList()
+    }
 
     const handleConditions = () => {
-      resourceListRef.value = getResourceListState(
-        fileId.value,
-        searchRef.value
-      )
+      listState.page = 1
+      requestResourceList()
     }
+
+    const renameInfo = reactive({
+      id: -1,
+      name: '',
+      description: ''
+    })
 
     const handleCreateFolder = () => {
       handleShowModal(folderShowRef)
@@ -148,15 +160,12 @@ export default defineComponent({
     }
 
     const updateList = () => {
-      resourceListRef.value = getResourceListState(
-        fileId.value,
-        searchRef.value
-      )
+      requestResourceList()
     }
     const fileStore = useFileStore()
 
     onMounted(() => {
-      resourceListRef.value = getResourceListState(fileId.value)
+      requestResourceList()
     })
 
     const breadcrumbItemsRef: Ref<Array<BreadcrumbItem> | undefined> = ref([
@@ -227,7 +236,6 @@ export default defineComponent({
 
     return {
       fileId,
-      searchRef,
       folderShowRef,
       uploadShowRef,
       renameShowRef,
@@ -242,7 +250,7 @@ export default defineComponent({
       handleUpdatePage,
       handleUpdatePageSize,
       handleGoRoot,
-      pagination: paginationReactive,
+      listState,
       renameInfo,
       breadcrumbItemsRef,
       trim
@@ -280,11 +288,12 @@ export default defineComponent({
               </NButton>
             </NButtonGroup>
             <NSpace>
-              <NInput
+              <SearchInput
+                onSearch={handleConditions}
                 size='small'
                 allowInput={this.trim}
                 placeholder={t('resource.file.enter_keyword_tips')}
-                v-model={[this.searchRef, 'value']}
+                v-model={[this.listState.searchVal, 'value']}
               />
               <NButton size='small' type='primary' onClick={handleConditions}>
                 <NIcon>
@@ -329,10 +338,10 @@ export default defineComponent({
                 />
                 <NSpace justify='center'>
                   <NPagination
-                    v-model:page={this.pagination.page}
-                    v-model:pageSize={this.pagination.pageSize}
-                    pageSizes={this.pagination.pageSizes}
-                    item-count={this.pagination.itemCount}
+                    v-model:page={this.listState.page}
+                    v-model:pageSize={this.listState.pageSize}
+                    pageSizes={this.listState.pageSizes}
+                    item-count={this.listState.itemCount}
                     onUpdatePage={this.handleUpdatePage}
                     onUpdatePageSize={this.handleUpdatePageSize}
                     show-quick-jumper

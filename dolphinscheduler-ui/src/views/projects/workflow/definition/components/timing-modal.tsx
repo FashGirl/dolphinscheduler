@@ -45,7 +45,7 @@ import {
   NList,
   NListItem,
   NThing,
-  NPopover
+  NPopover,
 } from 'naive-ui'
 import { ArrowDownOutlined, ArrowUpOutlined } from '@vicons/antd'
 import { timezoneList } from '@/common/timezone'

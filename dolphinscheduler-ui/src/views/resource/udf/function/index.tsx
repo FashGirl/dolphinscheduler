@@ -30,12 +30,13 @@ import {
   NDataTable,
   NButton,
   NPagination,
-  NInput
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { SearchOutlined } from '@vicons/antd'
 import { useTable } from './use-table'
 import Card from '@/components/card'
+import SearchInput from '@/components/search-input'
+import { useListSearchState } from '@/utils/list-search-state'
 import FolderModal from './components/function-modal'
 import styles from './index.module.scss'
 
@@ -43,8 +44,19 @@ export default defineComponent({
   name: 'function-manage',
   setup() {
     const { variables, createColumns, getTableData } = useTable()
+const LIST_SEARCH_FIELDS = [
+  'searchVal',
+  'page',
+  'pageSize'
+] as const
+
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
 
     const requestData = () => {
+      persistSearchState()
       getTableData({
         id: variables.id,
         pageSize: variables.pageSize,
@@ -114,7 +126,8 @@ export default defineComponent({
               {t('resource.function.create_udf_function')}
             </NButton>
             <NSpace>
-              <NInput
+              <SearchInput
+                onSearch={this.handleSearch}
                 allowInput={this.trim}
                 size='small'
                 placeholder={t('resource.function.enter_keyword_tips')}

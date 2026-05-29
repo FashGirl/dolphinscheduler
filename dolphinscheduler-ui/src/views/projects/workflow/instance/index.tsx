@@ -23,12 +23,25 @@ import {
   NPagination,
   NPopconfirm,
   NTooltip,
-  NSpace
+  NSpace,
 } from 'naive-ui'
 import { useTable } from './use-table'
 import Card from '@/components/card'
 import ProcessInstanceCondition from './components/process-instance-condition'
 import type { IWorkflowInstanceSearch } from './types'
+import { useListSearchState } from '@/utils/list-search-state'
+
+const LIST_SEARCH_FIELDS = [
+  'searchVal',
+  'executorName',
+  'host',
+  'stateType',
+  'startEndTime',
+  'startDate',
+  'endDate',
+  'page',
+  'pageSize'
+] as const
 
 export default defineComponent({
   name: 'WorkflowInstanceList',
@@ -37,7 +50,13 @@ export default defineComponent({
     const { variables, createColumns, getTableData, batchDeleteInstance } =
       useTable()
 
+    const { persist: persistSearchState } = useListSearchState(
+      variables,
+      LIST_SEARCH_FIELDS as unknown as (keyof typeof variables)[]
+    )
+
     const requestData = () => {
+      persistSearchState()
       getTableData()
     }
 
@@ -94,7 +113,14 @@ export default defineComponent({
     return (
       <NSpace vertical>
         <Card>
-          <ProcessInstanceCondition onHandleSearch={this.handleSearch} />
+          <ProcessInstanceCondition
+            v-model:searchVal={this.searchVal}
+            v-model:executorName={this.executorName}
+            v-model:host={this.host}
+            v-model:stateType={this.stateType}
+            v-model:startEndTime={this.startEndTime}
+            onHandleSearch={this.handleSearch}
+          />
         </Card>
         <Card title={t('project.workflow.workflow_instance')}>
           <NSpace vertical>
