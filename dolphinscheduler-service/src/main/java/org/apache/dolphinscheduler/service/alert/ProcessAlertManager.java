@@ -31,6 +31,8 @@ import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.ProjectUser;
 import org.apache.dolphinscheduler.dao.entity.TaskAlertContent;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
+import org.apache.dolphinscheduler.dao.entity.User;
+import org.apache.dolphinscheduler.dao.mapper.UserMapper;
 import org.apache.dolphinscheduler.plugin.task.api.enums.dp.DqTaskState;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -60,6 +62,24 @@ public class ProcessAlertManager {
      */
     @Autowired
     private AlertDao alertDao;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    /**
+     * get user phone by user id, returns null if not found or phone is blank
+     */
+    private String getUserPhone(int userId) {
+        if (userId <= 0) {
+            return null;
+        }
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return null;
+        }
+        String phone = user.getPhone();
+        return org.apache.commons.lang3.StringUtils.isBlank(phone) ? null : phone;
+    }
 
     /**
      * command type convert chinese
@@ -123,6 +143,7 @@ public class ProcessAlertManager {
                     .processEndTime(processInstance.getEndTime())
                     .processHost(processInstance.getHost())
                     .taskExecutorUser(processInstance.getExecutorName())
+                    .taskExecutorPhone(getUserPhone(processInstance.getExecutorId()))
                     .build();
             successTaskList.add(processAlertContent);
             res = JSONUtils.toJsonString(successTaskList);
@@ -144,6 +165,7 @@ public class ProcessAlertManager {
                         .taskName(task.getName())
                         .taskType(task.getTaskType())
                         .taskExecutorUser(task.getExecutorName())
+                        .taskExecutorPhone(getUserPhone(task.getExecutorId()))
                         .taskState(task.getState())
                         .taskStartTime(task.getStartTime())
                         .taskEndTime(task.getEndTime())
@@ -177,6 +199,7 @@ public class ProcessAlertManager {
                     .taskCode(taskInstance.getTaskCode())
                     .taskName(taskInstance.getName())
                     .taskExecutorUser(taskInstance.getExecutorName())
+                    .taskExecutorPhone(getUserPhone(taskInstance.getExecutorId()))
                     .taskHost(taskInstance.getHost())
                     .retryTimes(taskInstance.getRetryTimes())
                     .build();
@@ -432,6 +455,7 @@ public class ProcessAlertManager {
                 .processEndTime(processInstance.getEndTime())
                 .processHost(processInstance.getHost())
                 .taskExecutorUser(processInstance.getExecutorName())
+                .taskExecutorPhone(getUserPhone(processInstance.getExecutorId()))
                 .build();
         blockingNodeList.add(processAlertContent);
         String content = JSONUtils.toJsonString(blockingNodeList);

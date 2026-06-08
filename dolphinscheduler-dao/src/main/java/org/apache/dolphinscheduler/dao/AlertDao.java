@@ -31,10 +31,12 @@ import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.ProjectUser;
 import org.apache.dolphinscheduler.dao.entity.ServerAlertContent;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
+import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.dao.mapper.AlertGroupMapper;
 import org.apache.dolphinscheduler.dao.mapper.AlertMapper;
 import org.apache.dolphinscheduler.dao.mapper.AlertPluginInstanceMapper;
 import org.apache.dolphinscheduler.dao.mapper.AlertSendStatusMapper;
+import org.apache.dolphinscheduler.dao.mapper.UserMapper;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -73,6 +75,21 @@ public class AlertDao {
 
     @Autowired
     private AlertSendStatusMapper alertSendStatusMapper;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    private String getUserPhone(int userId) {
+        if (userId <= 0) {
+            return null;
+        }
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return null;
+        }
+        String phone = user.getPhone();
+        return org.apache.commons.lang3.StringUtils.isBlank(phone) ? null : phone;
+    }
 
     /**
      * insert alert
@@ -189,6 +206,8 @@ public class AlertDao {
                 .runTimes(processInstance.getRunTimes())
                 .processStartTime(processInstance.getStartTime())
                 .processHost(processInstance.getHost())
+                .taskExecutorUser(processInstance.getExecutorName())
+                .taskExecutorPhone(getUserPhone(processInstance.getExecutorId()))
                 .event(AlertEvent.TIME_OUT)
                 .warnLevel(AlertWarnLevel.MIDDLE)
                 .build();
@@ -236,6 +255,8 @@ public class AlertDao {
                 .taskType(taskInstance.getTaskType())
                 .taskStartTime(taskInstance.getStartTime())
                 .taskHost(taskInstance.getHost())
+                .taskExecutorUser(taskInstance.getExecutorName())
+                .taskExecutorPhone(getUserPhone(taskInstance.getExecutorId()))
                 .event(AlertEvent.TIME_OUT)
                 .warnLevel(AlertWarnLevel.MIDDLE)
                 .build();

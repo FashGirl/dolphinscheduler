@@ -39,6 +39,7 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -203,6 +204,30 @@ public final class DingTalkSender {
     }
 
     /**
+     * extract executor phone numbers from alert content JSON
+     */
+    private List<String> extractExecutorPhones(String content) {
+        List<String> phones = new ArrayList<>();
+        try {
+            List<Map> dataList = JSONUtils.toList(content, Map.class);
+            if (dataList != null) {
+                for (Map<?, ?> data : dataList) {
+                    Object phone = data.get("taskExecutorPhone");
+                    if (phone != null && org.apache.commons.lang3.StringUtils.isNotBlank(phone.toString())) {
+                        String phoneStr = phone.toString().trim();
+                        if (!phones.contains(phoneStr)) {
+                            phones.add(phoneStr);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // ignore parse errors, fall back to static config
+        }
+        return phones;
+    }
+
+    /**
      * generate msg json
      *
      * @param title title
@@ -218,13 +243,15 @@ public final class DingTalkSender {
         Map<String, Object> text = new HashMap<>();
         items.put(msgType, text);
 
+        List<String> dynamicPhones = extractExecutorPhones(content);
+
         if (DingTalkParamsConstants.DING_TALK_MSG_TYPE_MARKDOWN.equals(msgType)) {
-            generateMarkdownMsg(title, content, text);
+            generateMarkdownMsg(title, content, text, dynamicPhones);
         } else {
             generateTextMsg(title, content, text);
         }
 
-        setMsgAt(items);
+        setMsgAt(items, dynamicPhones);
         return JSONUtils.toJsonString(items);
 
     }
@@ -255,8 +282,10 @@ public final class DingTalkSender {
      * @param title title
      * @param content content
      * @param text text
+     * @param dynamicPhones executor phone numbers extracted from alert content
      */
-    private void generateMarkdownMsg(String title, String content, Map<String, Object> text) {
+    private void generateMarkdownMsg(String title, String content, Map<String, Object> text,
+                                     List<String> dynamicPhones) {
         // StringBuilder builder = new StringBuilder(content);
 
         StringBuilder builder = new StringBuilder();
@@ -337,19 +366,14 @@ public final class DingTalkSender {
             builder.append(keyword);
         }
         builder.append("\n\n");
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles)) {
-            Arrays.stream(atMobiles.split(",")).forEach(value -> {
-                builder.append("@");
-                builder.append(value);
-                builder.append(" ");
-            });
+        // prefer dynamic executor phones; fall back to static config phones
+        if (!dynamicPhones.isEmpty()) {
+            dynamicPhones.forEach(phone -> builder.append("@").append(phone).append(" "));
+        } else if (org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles)) {
+            Arrays.stream(atMobiles.split(",")).forEach(value -> builder.append("@").append(value).append(" "));
         }
         if (org.apache.commons.lang3.StringUtils.isNotBlank(atUserIds)) {
-            Arrays.stream(atUserIds.split(",")).forEach(value -> {
-                builder.append("@");
-                builder.append(value);
-                builder.append(" ");
-            });
+            Arrays.stream(atUserIds.split(",")).forEach(value -> builder.append("@").append(value).append(" "));
         }
 
         byte[] byt = StringUtils.getBytesUtf8(builder.toString());
@@ -377,19 +401,29 @@ public final class DingTalkSender {
      * configure msg @person
      *
      * @param items items
+     * @param dynamicPhones executor phone numbers extracted from alert content
      */
-    private void setMsgAt(Map<String, Object> items) {
+    private void setMsgAt(Map<String, Object> items, List<String> dynamicPhones) {
         Map<String, Object> at = new HashMap<>();
 
-        String[] atMobileArray =
-                org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles) ? atMobiles.split(",")
-                        : new String[0];
+        // merge static config phones with dynamic executor phones (deduplicated)
+        List<String> allPhones = new ArrayList<>();
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles)) {
+            Arrays.stream(atMobiles.split(","))
+                    .map(String::trim)
+                    .filter(org.apache.commons.lang3.StringUtils::isNotBlank)
+                    .forEach(allPhones::add);
+        }
+        dynamicPhones.stream()
+                .filter(p -> !allPhones.contains(p))
+                .forEach(allPhones::add);
+
         String[] atUserArray =
                 org.apache.commons.lang3.StringUtils.isNotBlank(atUserIds) ? atUserIds.split(",")
                         : new String[0];
         boolean isAtAll = Objects.isNull(atAll) ? false : atAll;
 
-        at.put("atMobiles", atMobileArray);
+        at.put("atMobiles", allPhones.toArray(new String[0]));
         at.put("atUserIds", atUserArray);
         at.put("isAtAll", isAtAll);
 

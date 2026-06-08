@@ -77,6 +77,8 @@ public class ProcessAlertContent implements Serializable {
     private String taskType;
     @JsonProperty("taskExecutorUser")
     private String taskExecutorUser;
+    @JsonProperty("taskExecutorPhone")
+    private String taskExecutorPhone;
     @JsonProperty("retryTimes")
     private Integer retryTimes;
     @JsonProperty("taskState")
