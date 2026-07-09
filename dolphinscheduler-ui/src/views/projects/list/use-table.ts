@@ -104,6 +104,7 @@ export function useTable() {
         title: t('project.list.workflow_define_count'),
         key: 'defCount',
         width: 120,
+        render: (row: { defCount?: number }) => row.defCount ?? 0,
         ellipsis: {
           tooltip: true
         }
@@ -112,6 +113,25 @@ export function useTable() {
         title: t('project.list.process_instance_running_count'),
         key: 'instRunningCount',
         width: 120,
+        render: (row: { instRunningCount?: number }) => row.instRunningCount ?? 0,
+        ellipsis: {
+          tooltip: true
+        }
+      },
+      {
+        title: t('project.list.process_instance_failure_count'),
+        key: 'instFailureCount',
+        width: 120,
+        render: (row: { instFailureCount?: number }) => row.instFailureCount ?? 0,
+        ellipsis: {
+          tooltip: true
+        }
+      },
+      {
+        title: t('project.list.process_instance_stop_count'),
+        key: 'instStopCount',
+        width: 120,
+        render: (row: { instStopCount?: number }) => row.instStopCount ?? 0,
         ellipsis: {
           tooltip: true
         }

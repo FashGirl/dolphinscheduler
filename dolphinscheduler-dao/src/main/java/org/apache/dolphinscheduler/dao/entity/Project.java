@@ -97,6 +97,18 @@ public class Project {
     @TableField(exist = false)
     private int instRunningCount;
 
+    /**
+     * process instance failure count
+     */
+    @TableField(exist = false)
+    private int instFailureCount;
+
+    /**
+     * process instance stop count
+     */
+    @TableField(exist = false)
+    private int instStopCount;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

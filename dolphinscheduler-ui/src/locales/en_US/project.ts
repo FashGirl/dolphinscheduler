@@ -28,6 +28,8 @@ export default {
     owned_users: 'Owned Users',
     workflow_define_count: 'Workflow Define Count',
     process_instance_running_count: 'Process Instance Running Count',
+    process_instance_failure_count: 'Failed Process Instance Count',
+    process_instance_stop_count: 'Stopped Process Instance Count',
     description: 'Description',
     create_time: 'Create Time',
     update_time: 'Update Time',

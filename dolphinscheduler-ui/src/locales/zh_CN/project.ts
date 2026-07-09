@@ -28,6 +28,8 @@ export default {
     owned_users: '所属用户',
     workflow_define_count: '工作流定义数',
     process_instance_running_count: '正在运行的流程数',
+    process_instance_failure_count: '失败的工作流数',
+    process_instance_stop_count: '停止的工作流数',
     description: '描述',
     create_time: '创建时间',
     update_time: '更新时间',
